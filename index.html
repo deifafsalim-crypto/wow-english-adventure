@@ -262,6 +262,19 @@ img{max-width:100%}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+.xg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+.xgt{position:relative;background:var(--surface2);border:2px solid var(--line);border-radius:22px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;transition:transform .2s var(--spring),border-color .2s}
+.xgt:hover{transform:translateY(-3px);border-color:var(--c,var(--sky))}.xgt i{font-style:normal;font-size:38px}.xgt b{font-size:17px}.xgt small{color:var(--muted);font-size:13px}.xgt .ck{position:absolute;top:8px;left:10px;color:var(--ok);font-weight:800}
+.xbar{height:10px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}.xbar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.xq{text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;margin:8px 0 14px}.xe{font-size:64px;line-height:1.1}.xw{font-size:30px;font-weight:800}.xw2{font-size:22px;font-weight:700;color:var(--muted)}
+.xopts{display:grid;grid-template-columns:1fr 1fr;gap:12px}.xo{background:var(--surface2);border:2px solid var(--line);border-radius:20px;padding:14px 8px;font-size:20px;font-weight:700;color:var(--ink);box-shadow:0 4px 0 var(--line);transition:transform .15s}
+.xo .xe{font-size:48px}.xo:active{transform:translateY(3px)}.xo.ok{background:var(--okbg);border-color:var(--ok)}.xo.no{background:var(--badbg);border-color:var(--bad);opacity:.7}
+.xopts.bub .xo{border-radius:50%;aspect-ratio:1;background:radial-gradient(circle at 30% 25%,#fff,var(--surface2) 70%);animation:xfl 3s ease-in-out infinite}.xopts.bub .xo.ok{animation:xpop .5s forwards}@keyframes xfl{50%{transform:translateY(-10px)}}@keyframes xpop{40%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
+.xfl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.xf{background:var(--surface2);border:2px solid var(--line);border-radius:20px;padding:12px 6px;display:flex;flex-direction:column;gap:2px;align-items:center;color:var(--ink)}.xf b{font-size:40px}.xf span{font-weight:800}.xf em{display:none;font-style:normal;color:var(--ok);font-weight:700}.xf.on{border-color:var(--ok);background:var(--okbg)}.xf.on em{display:block}
+.xans{min-height:62px;border:2px dashed var(--line);border-radius:18px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-bottom:12px}.xans.ok{border-color:var(--ok);background:var(--okbg)}.xans.no{border-color:var(--bad);background:var(--badbg)}
+.xtiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.xt{background:var(--butter);color:var(--onc);font-weight:800;font-size:20px;border-radius:14px;padding:8px 14px;box-shadow:0 3px 0 rgba(0,0,0,.15)}.xt.used{opacity:.25}.xt.on{background:var(--sky)}
+.xtop{display:flex;justify-content:space-between;font-size:20px;margin-bottom:8px}.xcatch{position:relative;height:320px;overflow:hidden;border-radius:22px;background:linear-gradient(var(--surface2),var(--surface));border:1px solid var(--line)}
+.xfall{position:absolute;width:64px;height:64px;font-size:40px;background:var(--surface);border-radius:20px;box-shadow:var(--shadow)}
 </style>
 </head>
 <body>
@@ -770,17 +783,63 @@ function learnView(st,L,u){
 function gameDone(st,L,u,msg){
   P.games[L.id]=true;save();beep(true);confetti();
   const d=document.createElement("div");d.className="card center pop";
-  d.innerHTML=`<div style="font-size:54px">🎉</div><h3 style="justify-content:center">${msg||"أحسنت! أنهيت اللعبة"}</h3><div class="actions"><button class="btn ghost" id="again">العب مرة أخرى</button><button class="btn" id="toQuiz" style="--c:${cvar(u)}">إلى الاختبار 📝</button></div>`;
+  d.innerHTML=`<div style="font-size:54px">🎉</div><h3 style="justify-content:center">${msg||"أحسنت! أنهيت اللعبة"}</h3><div class="actions"><button class="btn ghost" id="again">العب مرة أخرى</button><button class="btn ghost" id="more">🎮 لعبة ثانية</button><button class="btn" id="toQuiz" style="--c:${cvar(u)}">إلى الاختبار 📝</button></div>`;
   st.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"center"});
-  d.querySelector("#again").onclick=()=>go(Object.assign({},S));
+  d.querySelector("#again").onclick=()=>go(Object.assign({},S));d.querySelector("#more").onclick=()=>go(Object.assign({},S,{gm:null}));
   d.querySelector("#toQuiz").onclick=()=>go(Object.assign({},S,{step:"quiz"}));
 }
 
+/* ===== Extra games per lesson ===== */
+const ALLW=UNITS.flatMap(u=>u.lessons.flatMap(l=>l.words));
+const XG=[['flash','🃏','بطاقات الكلمات','اقلب البطاقة وتعلّم المعنى'],['pic','🖼️','اختر الصورة','اقرأ الكلمة واختر صورتها'],['listen','🎧','اسمع واختر','اسمع الكلمة واختر المكتوبة'],['mean','🔁','ما المعنى؟','اختر المعنى بالعربي'],['bubble','🫧','فرقع الفقاعات','اسمع وفرقع الفقاعة الصحيحة'],['catch','🎯','صِد الصورة','اصطد الصورة قبل أن تسقط'],['spell','🔤','رتّب الأجزاء','كوّن الكلمة أو العبارة'],['sent','🧩','رتّب الجملة','رتّب جملة من الدرس'],['tf','✅','صح أم خطأ؟','هل المعنى صحيح؟']];
+const MI={match:'🔗',sort:'🗂️',build:'🏗️',memory:'🧠',doors:'🚪'};
+const xD=(w,W)=>{const o=[],E=new Set([w[0]]),T=new Set([w[1],w[2]]);for(const x of [...shuffle(W),...shuffle(ALLW)]){if(o.length>=3)break;if(E.has(x[0])||T.has(x[1])||T.has(x[2]))continue;E.add(x[0]);T.add(x[1]);T.add(x[2]);o.push(x)}return o};
+const xR=(W,f,n=8)=>shuffle(W).slice(0,n).map(w=>f(w,xD(w,W)));
+const xE=e=>`<span class="xe">${e}</span>`,xW=t=>`<div class="en xw">${esc(t)}</div>`;
+const xRounds={
+ pic:W=>xR(W,(w,d)=>{const o=shuffle([w,...d]);return{pre:xW(w[1]),say:w[1],o:o.map(x=>xE(x[0])),a:o.indexOf(w)}}),
+ listen:W=>xR(W,(w,d)=>{const o=shuffle([w,...d]);return{pre:'<div class="xw">🎧</div>',say:w[1],auto:1,o:o.map(x=>`<span class="en">${esc(x[1])}</span>`),a:o.indexOf(w)}}),
+ mean:W=>xR(W,(w,d)=>{const o=shuffle([w,...d]);return{pre:xE(w[0])+xW(w[1]),say:w[1],o:o.map(x=>esc(x[2])),a:o.indexOf(w)}}),
+ bubble:W=>xR(W,(w,d)=>{const o=shuffle([w,...d]);return{pre:xW(w[1]),say:w[1],auto:1,bub:1,o:o.map(x=>xE(x[0])),a:o.indexOf(w)}}),
+ tf:W=>xR(W,(w,d)=>{const t=Math.random()<.5;return{pre:xW(w[1])+`<div class="xw2">= ${esc(t?w[2]:d[0][2])}</div>`,say:w[1],o:['✔ صح','✘ خطأ'],a:t?0:1}},10)
+};
+function xMcq(body,R,done){let i=0,sc=0;const next=()=>{if(i>=R.length)return done(`أحسنت! ${sc} من ${R.length} من أول مرة`);const r=R[i];let miss=0;
+ body.innerHTML=`<div class="xbar"><i style="width:${i/R.length*100}%"></i></div><div class="xq">${r.pre}<button class="btn ghost" data-sp style="padding:6px 16px;font-size:16px">🔊 اسمع</button></div><div class="xopts${r.bub?' bub':''}">${r.o.map((o,k)=>`<button class="xo" data-k="${k}" style="animation-delay:${k*.3}s">${o}</button>`).join('')}</div>`;
+ body.querySelector('[data-sp]').onclick=()=>speak(r.say);if(r.auto)speak(r.say);
+ body.querySelectorAll('.xo').forEach(b=>b.onclick=()=>{if(+b.dataset.k===r.a){beep(true);if(!miss)sc++;b.classList.add('ok');body.querySelectorAll('.xo').forEach(x=>x.disabled=true);i++;setTimeout(next,800)}else{beep(false);miss=1;b.classList.add('no');b.disabled=true}})};next()}
+function xFlash(body,W,done){const seen=new Set();body.innerHTML=`<p class="ghint">اضغط على البطاقة لتقلبها وتسمع الكلمة</p><div class="xfl">${W.map((w,i)=>`<button class="xf" data-i="${i}"><b>${w[0]}</b><span class="en">${esc(w[1])}</span><em>${esc(w[2])}</em></button>`).join('')}</div><p class="ghint" id="xc"></p>`;
+ body.querySelectorAll('.xf').forEach(b=>b.onclick=()=>{b.classList.toggle('on');speak(W[+b.dataset.i][1]);seen.add(b.dataset.i);body.querySelector('#xc').textContent=seen.size+' / '+W.length;if(seen.size===W.length)setTimeout(()=>done('قلبت كل البطاقات! 🌟'),700)})}
+function xBuild(body,I,done){let i=0,sc=0;const next=()=>{if(i>=I.length)return done(`أحسنت! ${sc} من ${I.length} من أول مرة`);const it=I[i];let miss=0,ans=[];const T=shuffle(it.t.map((x,k)=>({x,k})));
+ body.innerHTML=`<div class="xbar"><i style="width:${i/I.length*100}%"></i></div><div class="xq">${it.pre}<button class="btn ghost" data-sp style="padding:6px 16px;font-size:16px">🔊</button></div><div class="xans en" dir="ltr" id="xa"></div><div class="xtiles en" dir="ltr" id="xt">${T.map(o=>`<button class="xt" data-k="${o.k}">${esc(o.x)}</button>`).join('')}</div>`;
+ const A=body.querySelector('#xa');body.querySelector('[data-sp]').onclick=()=>speak(it.say);
+ const draw=()=>{A.innerHTML=ans.map(o=>`<button class="xt on" data-k="${o.k}">${esc(o.x)}</button>`).join('');A.querySelectorAll('.xt').forEach(b=>b.onclick=()=>{const o=ans.find(z=>z.k==b.dataset.k);ans=ans.filter(z=>z!==o);body.querySelector(`#xt [data-k="${o.k}"]`).classList.remove('used');draw()})};
+ body.querySelectorAll('#xt .xt').forEach(b=>b.onclick=()=>{if(b.classList.contains('used'))return;b.classList.add('used');ans.push(T.find(z=>z.k==b.dataset.k));draw();
+  if(ans.length===T.length){if(ans.map(z=>z.x).join(it.j)===it.t.join(it.j)){beep(true);if(!miss)sc++;A.classList.add('ok');speak(it.say);i++;setTimeout(next,1200)}else{beep(false);miss=1;A.classList.add('no');setTimeout(()=>{A.classList.remove('no');ans=[];body.querySelectorAll('#xt .xt').forEach(x=>x.classList.remove('used'));draw()},900)}}})};next()}
+function xCatch(body,W,done){const T=shuffle(W).slice(0,5);let ti=0,sc=0,lives=3,els=[],end=0;
+ body.innerHTML=`<div class="xtop"><b id="ct"></b><span id="lv"></span></div><div class="xcatch" id="cs"></div><p class="ghint">اضغط على الصورة المطلوبة قبل أن تنزل!</p>`;const cs=body.querySelector('#cs');
+ const hud=()=>{body.querySelector('#ct').innerHTML=`🎯 <span class="en">${esc(T[ti][1])}</span>`;body.querySelector('#lv').textContent='❤️'.repeat(lives)+' ⭐'+sc};
+ const fin=()=>{end=1;done(`صدت ${sc} من ${T.length}`)};
+ const sp=()=>{const it=Math.random()<.5?T[ti]:(shuffle(W.filter(x=>x!==T[ti]&&x[0]!==T[ti][0]))[0]||T[ti]);const e=document.createElement('button');e.className='xfall';e.textContent=it[0];e.style.left=Math.random()*(cs.clientWidth-70)+'px';e.y=-70;
+  e.onclick=()=>{if(e.dead||end)return;e.dead=1;e.remove();if(it===T[ti]){sc++;beep(true);els.forEach(x=>x.remove());els=[];ti++;if(ti>=T.length)return fin();hud();speak(T[ti][1])}else{lives--;beep(false);hud();if(!lives)fin()}};cs.appendChild(e);els.push(e)};
+ hud();speak(T[0][1]);let last=performance.now(),acc=900;
+ const loop=t=>{if(!cs.isConnected||end)return;const dt=Math.min(50,t-last);last=t;acc+=dt;if(acc>1100){acc=0;sp()}els.forEach(e=>{e.y+=dt*.08;e.style.top=e.y+'px';if(e.y>cs.clientHeight)e.dead=1});els.filter(e=>e.dead&&e.isConnected).forEach(e=>e.remove());els=els.filter(e=>!e.dead);requestAnimationFrame(loop)};requestAnimationFrame(loop)}
+const xSpell=W=>shuffle(W).map(w=>{const one=!/\s/.test(w[1]);return{t:one?w[1].split(''):w[1].split(' '),j:one?'':' ',say:w[1],pre:xE(w[0])+`<div class="xw2">${esc(w[2])}</div>`}}).filter(x=>x.t.length>=2&&x.t.length<=13).slice(0,6);
+const xSent=L=>shuffle(L.examples).slice(0,5).map(e=>({t:e[0].split(' '),j:' ',say:e[0],pre:`<div class="xw2">${esc(e[1])}</div>`}));
 function gameView(st,L,u){
-  const g=L.game;
-  st.innerHTML=`<div class="card" id="gcard"><h3 class="gtitle" style="justify-content:center">${g.title}</h3><div id="gbody"></div></div>`;
-  const body=document.getElementById("gbody");
-  ({match:gMatch,sort:gSort,build:gBuild,memory:gMemory,doors:gDoors})[g.type](body,g,()=>gameDone(st,L,u),u);
+ const g=L.game,W=L.words,key=S.gm;
+ const all=[['main',MI[g.type]||'🎮',g.title,'لعبة الدرس الأساسية'],...XG.filter(x=>x[0]!=='sent'||L.examples.length>=2)];
+ if(!key){st.innerHTML=`<div class="card"><h3 style="justify-content:center">🎮 اختر لعبة</h3><p class="ghint">كل لعبة تساعدك تحفظ كلمات الدرس بطريقة مختلفة!</p><div class="xg">${all.map(x=>`<button class="xgt" data-k="${x[0]}"><i>${x[1]}</i><b>${x[2]}</b><small>${x[3]}</small>${P.games[L.id+':'+x[0]]?'<span class="ck">✓</span>':''}</button>`).join('')}</div></div>`;
+  st.querySelectorAll('.xgt').forEach(b=>b.onclick=()=>go(Object.assign({},S,{gm:b.dataset.k})));return}
+ const t=all.find(x=>x[0]===key)||all[0];
+ st.innerHTML=`<div class="card" id="gcard"><button class="btn ghost" id="xb" style="padding:6px 16px;font-size:15px">→ كل الألعاب</button><h3 class="gtitle" style="justify-content:center">${t[1]} ${t[2]}</h3><div id="gbody"></div></div>`;
+ st.querySelector('#xb').onclick=()=>go(Object.assign({},S,{gm:null}));
+ const body=st.querySelector('#gbody'),fin=m=>{P.games[L.id+':'+t[0]]=true;gameDone(st,L,u,m)};
+ if(t[0]==='main')return ({match:gMatch,sort:gSort,build:gBuild,memory:gMemory,doors:gDoors})[g.type](body,g,fin,u);
+ if(t[0]==='flash')return xFlash(body,W,fin);
+ if(t[0]==='catch')return xCatch(body,W,fin);
+ if(t[0]==='spell')return xBuild(body,xSpell(W),fin);
+ if(t[0]==='sent')return xBuild(body,xSent(L),fin);
+ xMcq(body,xRounds[t[0]](W),fin);
 }
 
 /* --- Match --- */
